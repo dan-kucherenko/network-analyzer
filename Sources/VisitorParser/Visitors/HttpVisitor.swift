@@ -3,8 +3,12 @@ import SwiftSyntax
 class HttpVisitor: SyntaxVisitor {
     struct PropertyImpact {
         var found: Bool = false
-        var value: Any? = nil
+        var value: String?
         var hasNetworkImpact: Bool = false
+        
+        var description: String {
+            return "Found: \(found), Value: \(value), Network Impact: \(hasNetworkImpact)"
+        }
     }
     
     private var properties: [String: PropertyImpact] = [
@@ -15,7 +19,7 @@ class HttpVisitor: SyntaxVisitor {
     ]
 
     override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
-        if let baseExpr = node.base?.as(DeclReferenceExprSyntax.self) {
+        if ((node.base?.as(DeclReferenceExprSyntax.self)) != nil) {
             let property = node.declName.baseName.text
             if properties.keys.contains(property) {
                 properties[property]?.found = true
@@ -23,43 +27,43 @@ class HttpVisitor: SyntaxVisitor {
         }
         return .visitChildren
     }
-
-    override func visit(_ node: SequenceExprSyntax) -> SyntaxVisitorContinueKind {
-        for element in node.elements {
-            if let assignExpr = element.as(InfixOperatorExprSyntax.self),
-               let memberAccess = assignExpr.leftOperand.as(MemberAccessExprSyntax.self) {
-                let property = memberAccess.declName.baseName.text
-                
-                if properties.keys.contains(property) {
-                    properties[property]?.found = true
-                    
-                    if let booleanLiteral = assignExpr.rightOperand.as(BooleanLiteralExprSyntax.self) {
-                        let boolValue = booleanLiteral.literal.text == "true"
-                        properties[property]?.value = boolValue
-                        
-                        switch property {
-                        case "httpShouldSetCookies":
-                            properties[property]?.hasNetworkImpact = boolValue
-                        case "httpShouldUsePipelining":
-                            properties[property]?.hasNetworkImpact = !boolValue
-                        default:
-                            break
-                        }
-                    } else if let enumCaseExpr = assignExpr.rightOperand.as(MemberAccessExprSyntax.self) {
-                        let enumCase = enumCaseExpr.declName.baseName.text
-                        
-                        if property == "httpCookieAcceptPolicy" {
-                            properties[property]?.value = enumCase
-                            properties[property]?.hasNetworkImpact = true
-                        }
-                    } else if property == "httpAdditionalHeaders" {
-                        properties[property]?.hasNetworkImpact = true
-                    }
-                }
-            }
-        }
-        return .visitChildren
-    }
+    
+    //    override func visit(_ node: InfixOperatorExprSyntax) -> SyntaxVisitorContinueKind {
+    //        if let assignExpr = element.as(InfixOperatorExprSyntax.self),
+    //           let memberAccess = assignExpr.leftOperand.as(MemberAccessExprSyntax.self) {
+    //            let property = memberAccess.declName.baseName.text
+    //
+    //            if properties.keys.contains(property),
+    //               let propertyImpact = properties[property] {
+    //                propertyImpact.found = true
+    //
+    //                if let booleanLiteral = assignExpr.rightOperand.as(BooleanLiteralExprSyntax.self) {
+    //                    let boolValue = booleanLiteral.literal.text == "true"
+    //                    propertyImpact.value = "Test Bool"
+    //                    print("Sequence Syntax visitor")
+    //
+    //                    switch property {
+    //                    case "httpShouldSetCookies":
+    //                        propertyImpact.hasNetworkImpact = boolValue
+    //                    case "httpShouldUsePipelining":
+    //                        propertyImpact.hasNetworkImpact = !boolValue
+    //                    default:
+    //                        break
+    //                    }
+    //                } else if let enumCaseExpr = assignExpr.rightOperand.as(MemberAccessExprSyntax.self) {
+    //                    let enumCase = enumCaseExpr.declName.baseName.text
+    //
+    //                    if property == "httpCookieAcceptPolicy" {
+    //                        propertyImpact.value = enumCase
+    //                        propertyImpact.hasNetworkImpact = true
+    //                    }
+    //                } else if property == "httpAdditionalHeaders" {
+    //                    propertyImpact.hasNetworkImpact = true
+    //                }
+    //            }
+    //        }
+    //        return .visitChildren
+    //    }
     
     func getPropertyStatus(for property: String) -> PropertyImpact? {
         return properties[property]
@@ -69,24 +73,10 @@ class HttpVisitor: SyntaxVisitor {
         return properties.values.contains { $0.hasNetworkImpact }
     }
     
-    func getImpactingSummary() -> [(String, String)] {
-        return properties.compactMap { property, impact -> (String, String)? in
-            guard impact.found else { return nil }
-            
-            var message: String
-            switch property {
-            case "httpAdditionalHeaders":
-                message = "Custom headers may increase request size"
-            case "httpShouldSetCookies":
-                message = impact.value as? Bool == true ? "Cookies enabled, may increase traffic" : "Cookies disabled"
-            case "httpShouldUsePipelining":
-                message = impact.value as? Bool == true ? "Pipelining enabled (optimized)" : "Pipelining disabled"
-            case "httpCookieAcceptPolicy":
-                message = "Cookie policy configuration found"
-            default:
-                message = "Configuration found"
+    func getImpactingSummary() -> [String] {
+        return properties
+            .compactMap { property, impactInfo -> String? in
+                "Property: \(property), impact info: \n\(impactInfo.description)"
             }
-            return (property, message)
-        }
     }
 }

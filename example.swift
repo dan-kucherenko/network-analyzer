@@ -6,3 +6,9 @@
 //
 
 import Foundation
+
+let config = URLSessionConfiguration.default
+//config.httpAdditionalHeaders = ["User-Agent": "MyApp"]
+config.httpShouldSetCookies = true
+config.httpCookieAcceptPolicy = .always
+config.httpShouldUsePipelining = true
