@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 class ConnectionVisitor: SyntaxVisitor, Visitable {
-    private var properties: [String: PropertyImpact] = [
+    var properties: [String: PropertyImpact] = [
         "allowsCellularAccess": PropertyImpact(),
         "networkServiceType": PropertyImpact(),
         "waitsForConnectivity": PropertyImpact()
@@ -51,11 +51,5 @@ class ConnectionVisitor: SyntaxVisitor, Visitable {
             }
         }
         return .visitChildren
-    }
-    
-    func getImpactingSummary() -> [String] {
-        return properties.compactMap { property, impactInfo -> String? in
-            "Property: \(property), impact info: \n\(impactInfo.description)"
-        }
     }
 }

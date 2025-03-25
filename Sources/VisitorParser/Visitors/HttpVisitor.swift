@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 class HttpVisitor: SyntaxVisitor, Visitable {
-    private var properties: [String: PropertyImpact] = [
+    var properties: [String: PropertyImpact] = [
         "httpAdditionalHeaders": PropertyImpact(),
         "httpShouldSetCookies": PropertyImpact(),
         "httpCookieAcceptPolicy": PropertyImpact(),
@@ -53,12 +53,5 @@ class HttpVisitor: SyntaxVisitor, Visitable {
             }
         }
         return .visitChildren
-    }
-    
-    func getImpactingSummary() -> [String] {
-        return properties
-            .compactMap { property, impactInfo -> String? in
-                "Property: \(property), impact info: \n\(impactInfo.description)"
-            }
     }
 }
