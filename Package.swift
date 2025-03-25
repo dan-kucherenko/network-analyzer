@@ -4,9 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "network-analizer",
+    name: "network-analyzer",
     platforms: [
-        .macOS(.v15),
+        .macOS(.v15)
+    ],
+    products: [
+        .executable(name: "network-analyzer", targets: ["network-analyzer"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-docc-symbolkit.git", branch: "main"),
@@ -15,10 +18,11 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "network-analizer",
+            name: "network-analyzer",
             dependencies: [
                 .product(name: "SymbolKit", package: "swift-docc-symbolkit"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]
         ),
