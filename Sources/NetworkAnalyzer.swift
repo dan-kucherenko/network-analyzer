@@ -7,7 +7,7 @@ import SymbolKit
 
 @main
 struct NetworkAnalyzer: ParsableCommand {
-    static let configuration = CommandConfiguration(abstract: "Networking Code Analizer hello", version: "0.0.1")
+    static let configuration = CommandConfiguration(abstract: "Networking Code Analyzer", version: "0.0.1")
     
     @Option(name: .short, help: "Path to the input file to analyze")
     var inputFile: String
