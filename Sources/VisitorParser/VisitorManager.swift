@@ -10,14 +10,15 @@ class VisitorManager {
         self.outputPath = outputPath
         self.visitors = [
             HttpVisitor(viewMode: .all),
-            ConnectionVisitor(viewMode: .all)
+            ConnectionVisitor(viewMode: .all),
+            ContentDeliveryVisitor(viewMode: .all)
         ]
     }
     
     func analyzeSyntaxTree(_ tree: SourceFileSyntax) -> [String] {
         visitors.map { visitor in
             visitor.walk(tree)
-            return visitor.getImpactingSummary()
+            return visitor.getImpactingSummary(properties: visitor.properties)
         }.flatMap { $0 }
     }
 }
