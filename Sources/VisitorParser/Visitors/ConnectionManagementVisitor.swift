@@ -13,7 +13,7 @@ class ConnectionVisitor: SyntaxVisitor, Visitable {
                 let property = memberAccessNode.declName.baseName.text
                 
                 if properties.keys.contains(property),
-                   var propertyImpact = properties[property] {
+                   let propertyImpact = properties[property] {
                     propertyImpact.found = true
                     
                     if let booleanLiteral = parentNode.last?.as(BooleanLiteralExprSyntax.self) {
