@@ -14,23 +14,21 @@ struct NetworkAnalyzer: ParsableCommand {
     
     @Option(name: .short, help: "Path to the output file")
     var outputPath: String?
-        
+    
     mutating func run() throws {
         let fileURL = URL(fileURLWithPath: inputFile)
         let fileContent = try String(contentsOf: fileURL, encoding: .utf8)
         
-        // Parse the Swift source file into a syntax tree
         let syntaxTree = Parser.parse(source: fileContent)
 
         let manager = VisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
-        
         
         let results = manager.analyzeSyntaxTree(syntaxTree)
 
         if let outputPath {
             try results.joined(separator: "\n---\n").write(toFile: outputPath, atomically: true, encoding: .utf8)
         } else {
-            results.forEach { print($0) }
+            print(results.joined(separator: "\n---\n"))
         }
     }
 }

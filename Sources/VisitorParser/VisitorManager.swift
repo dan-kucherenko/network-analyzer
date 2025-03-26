@@ -11,7 +11,10 @@ class VisitorManager {
         self.visitors = [
             HttpVisitor(viewMode: .all),
             ConnectionVisitor(viewMode: .all),
-            ContentDeliveryVisitor(viewMode: .all)
+            ContentDeliveryVisitor(viewMode: .all),
+            DataCachingVisitor(viewMode: .all),
+            PrefetchingAndBackgroundDataVisitor(viewMode: .all),
+            TimeoutAndRetryVisitor(viewMode: .all)
         ]
     }
     
