@@ -1,1 +1,1 @@
-# network-analizer
+# network-analyzer
