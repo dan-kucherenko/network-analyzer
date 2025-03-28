@@ -21,7 +21,7 @@ struct NetworkAnalyzer: ParsableCommand {
         
         let syntaxTree = Parser.parse(source: fileContent)
 
-        let manager = VisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
+        let manager = URLVisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
         
         let results = manager.analyzeSyntaxTree(syntaxTree)
 
