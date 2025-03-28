@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-class VisitorManager {
+class URLVisitorManager {
     private let filePath: String
     private let outputPath: String
     let visitors: [Visitable]
