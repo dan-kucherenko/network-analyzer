@@ -26,11 +26,13 @@ struct NetworkAnalyzer: ParsableCommand {
         let pollingManager = PollingVisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
         let lifecycleManager = LifecycleVisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
         let cachingManager = CachingVisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
+        let notificationManager = NotificationVisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
 
         let urlResults = urlManager.analyzeSyntaxTree(syntaxTree)
         let pollingResults = pollingManager.analyzeSyntaxTree(syntaxTree)
         let lifecycleResults = lifecycleManager.analyzeSyntaxTree(syntaxTree)
         let cachingResults = cachingManager.analyzeSyntaxTree(syntaxTree)
+        let notificationResults = notificationManager.analyzeSyntaxTree(syntaxTree)
 
         var allResults: [String] = []
         allResults.append(contentsOf: urlResults)
@@ -40,6 +42,8 @@ struct NetworkAnalyzer: ParsableCommand {
         allResults.append(contentsOf: lifecycleResults)
         allResults.append("---")
         allResults.append(contentsOf: cachingResults)
+        allResults.append("---")
+        allResults.append(contentsOf: notificationResults)
 
         let formattedResults = allResults.joined(separator: "\n")
         if let outputPath = outputPath {
