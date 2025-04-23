@@ -24,7 +24,6 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         let functionName = node.name.text
 
-        // Check applicationDidEnterBackground
         if functionName == "applicationDidEnterBackground" {
             let propertyImpact = properties["backgroundOperations"]
             propertyImpact?.found = true
@@ -42,7 +41,6 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
             }
         }
 
-        // Check applicationWillResignActive
         if functionName == "applicationWillResignActive" {
             let propertyImpact = properties["resignActiveHandling"]
             propertyImpact?.found = true
@@ -64,7 +62,6 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
     }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-        // Check if we're inside a lifecycle method by walking up the syntax tree
         if let functionDecl = findParentFunction(node),
            functionDecl.name.text == "applicationDidEnterBackground"
         {

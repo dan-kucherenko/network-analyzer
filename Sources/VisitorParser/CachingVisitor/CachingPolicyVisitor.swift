@@ -25,7 +25,6 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
                     }
                 }
 
-                // Check for requestCachePolicy assignments
                 if property == "requestCachePolicy" {
                     if let policyAccess = parentNode.last?.as(MemberAccessExprSyntax.self) {
                         let policyName = policyAccess.declName.baseName.text

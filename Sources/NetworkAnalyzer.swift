@@ -21,7 +21,6 @@ struct NetworkAnalyzer: ParsableCommand {
 
         let syntaxTree = Parser.parse(source: fileContent)
 
-        // Initialize all managers
         let urlManager = URLVisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
         let pollingManager = PollingVisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
         let lifecycleManager = LifecycleVisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
