@@ -9,12 +9,12 @@ class URLVisitorManager {
         self.filePath = filePath
         self.outputPath = outputPath
         self.visitors = [
-            HttpVisitor(viewMode: .all),
-            ConnectionVisitor(viewMode: .all),
-            ContentDeliveryVisitor(viewMode: .all),
-            DataCachingVisitor(viewMode: .all),
-            PrefetchingAndBackgroundDataVisitor(viewMode: .all),
-            TimeoutAndRetryVisitor(viewMode: .all)
+            HttpVisitor(filePath: filePath),
+            ConnectionVisitor(filePath: filePath),
+            ContentDeliveryVisitor(filePath: filePath),
+            DataCachingVisitor(filePath: filePath),
+            PrefetchingAndBackgroundDataVisitor(filePath: filePath),
+            TimeoutAndRetryVisitor(filePath: filePath)
         ]
     }
     

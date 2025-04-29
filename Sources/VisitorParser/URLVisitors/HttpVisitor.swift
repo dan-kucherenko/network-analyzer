@@ -8,10 +8,18 @@ class HttpVisitor: SyntaxVisitor, Visitable {
         "httpShouldUsePipelining": PropertyImpact()
     ]
     
+    private let filePath: String
+    
+    init(filePath: String) {
+        self.filePath = filePath
+        super.init(viewMode: .all)
+    }
+    
     override func visit(_ node: AssignmentExprSyntax) -> SyntaxVisitorContinueKind {
         if let parentNode = node.parent?.as(ExprListSyntax.self) {
             if let memberAccessNode = parentNode.first?.as(MemberAccessExprSyntax.self) {
                 let property = memberAccessNode.declName.baseName.text
+                let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
                 
                 if properties.keys.contains(property),
                    let propertyImpact = properties[property] {
@@ -24,8 +32,10 @@ class HttpVisitor: SyntaxVisitor, Visitable {
                         switch property {
                         case "httpShouldSetCookies":
                             propertyImpact.hasNetworkImpact = boolValue
+                            propertyImpact.location.append((line: location.line, column: location.column))
                         case "httpShouldUsePipelining":
                             propertyImpact.hasNetworkImpact = !boolValue
+                            propertyImpact.location.append((line: location.line, column: location.column))
                         default:
                             break
                         }
@@ -35,9 +45,11 @@ class HttpVisitor: SyntaxVisitor, Visitable {
                         if property == "httpCookieAcceptPolicy" {
                             propertyImpact.value = enumCase
                             propertyImpact.hasNetworkImpact = (enumCase.elementsEqual("never")) ? false : true
+                            propertyImpact.location.append((line: location.line, column: location.column))
                         }
                     } else if property == "httpAdditionalHeaders" {
                         propertyImpact.hasNetworkImpact = true
+                        propertyImpact.location.append((line: location.line, column: location.column))
                     }
                 }
             }
@@ -49,7 +61,10 @@ class HttpVisitor: SyntaxVisitor, Visitable {
         if ((node.base?.as(DeclReferenceExprSyntax.self)) != nil) {
             let property = node.declName.baseName.text
             if properties.keys.contains(property) {
-                properties[property]?.found = true
+                let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
+                let propertyImpact = properties[property]
+                propertyImpact?.found = true
+                propertyImpact?.location.append((line: location.line, column: location.column))
             }
         }
         return .visitChildren

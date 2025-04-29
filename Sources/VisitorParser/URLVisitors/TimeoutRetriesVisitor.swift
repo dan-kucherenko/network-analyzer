@@ -6,10 +6,18 @@ class TimeoutAndRetryVisitor: SyntaxVisitor, Visitable {
         "timeoutIntervalForResource": PropertyImpact()
     ]
     
+    private let filePath: String
+    
+    init(filePath: String) {
+        self.filePath = filePath
+        super.init(viewMode: .all)
+    }
+    
     override func visit(_ node: AssignmentExprSyntax) -> SyntaxVisitorContinueKind {
         if let parentNode = node.parent?.as(ExprListSyntax.self) {
             if let memberAccessNode = parentNode.first?.as(MemberAccessExprSyntax.self) {
                 let property = memberAccessNode.declName.baseName.text
+                let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
                 
                 if properties.keys.contains(property),
                    let propertyImpact = properties[property] {
@@ -23,10 +31,12 @@ class TimeoutAndRetryVisitor: SyntaxVisitor, Visitable {
                         case "timeoutIntervalForRequest":
                             if let timeout = timeoutValue, timeout < 30 {
                                 propertyImpact.hasNetworkImpact = true
+                                propertyImpact.location.append((line: location.line, column: location.column))
                             }
                         case "timeoutIntervalForResource":
                             if let timeout = timeoutValue, timeout < 30 {
                                 propertyImpact.hasNetworkImpact = true
+                                propertyImpact.location.append((line: location.line, column: location.column))
                             }
                         default:
                             break
@@ -42,7 +52,10 @@ class TimeoutAndRetryVisitor: SyntaxVisitor, Visitable {
         if ((node.base?.as(DeclReferenceExprSyntax.self)) != nil) {
             let property = node.declName.baseName.text
             if properties.keys.contains(property) {
-                properties[property]?.found = true
+                let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
+                let propertyImpact = properties[property]
+                propertyImpact?.found = true
+                propertyImpact?.location.append((line: location.line, column: location.column))
             }
         }
         return .visitChildren

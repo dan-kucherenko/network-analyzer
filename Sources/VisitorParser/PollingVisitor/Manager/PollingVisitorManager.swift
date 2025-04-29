@@ -9,7 +9,7 @@ class PollingVisitorManager {
         self.filePath = filePath
         self.outputPath = outputPath
         visitors = [
-            PollingVisitor(viewMode: .all),
+            PollingVisitor(filePath: filePath),
         ]
     }
 

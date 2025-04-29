@@ -5,11 +5,19 @@ class ContentDeliveryVisitor: SyntaxVisitor, Visitable {
         "httpMaximumConnectionsPerHost": PropertyImpact(),
         "allowsExpensiveNetworkAccess": PropertyImpact()
     ]
+    
+    private let filePath: String
+    
+    init(filePath: String) {
+        self.filePath = filePath
+        super.init(viewMode: .all)
+    }
 
     override func visit(_ node: AssignmentExprSyntax) -> SyntaxVisitorContinueKind {
         if let parentNode = node.parent?.as(ExprListSyntax.self) {
             if let memberAccessNode = parentNode.first?.as(MemberAccessExprSyntax.self) {
                 let property = memberAccessNode.declName.baseName.text
+                let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
 
                 if properties.keys.contains(property),
                    let propertyImpact = properties[property] {
@@ -19,10 +27,12 @@ class ContentDeliveryVisitor: SyntaxVisitor, Visitable {
                        property == "httpMaximumConnectionsPerHost" {
                         propertyImpact.value = intLiteral.literal.text
                         propertyImpact.hasNetworkImpact = (Int(intLiteral.literal.text) ?? 0) > 6
+                        propertyImpact.location.append((line: location.line, column: location.column))
                     } else if let boolLiteral = parentNode.last?.as(BooleanLiteralExprSyntax.self),
                               property == "allowsExpensiveNetworkAccess" {
                         propertyImpact.value = boolLiteral.literal.text
                         propertyImpact.hasNetworkImpact = boolLiteral.literal.text == "true"
+                        propertyImpact.location.append((line: location.line, column: location.column))
                     }
 
                     properties[property] = propertyImpact
@@ -36,7 +46,10 @@ class ContentDeliveryVisitor: SyntaxVisitor, Visitable {
         if ((node.base?.as(DeclReferenceExprSyntax.self)) != nil) {
             let property = node.declName.baseName.text
             if properties.keys.contains(property) {
-                properties[property]?.found = true
+                let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
+                let propertyImpact = properties[property]
+                propertyImpact?.found = true
+                propertyImpact?.location.append((line: location.line, column: location.column))
             }
         }
         return .visitChildren

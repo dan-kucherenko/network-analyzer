@@ -18,8 +18,7 @@ class NotificationHandlingVisitor: SyntaxVisitor, Visitable {
             let hasRemoteNotificationHandling = node.signature.parameterClause.parameters.contains { param in
                 if param.firstName.text == "didReceiveRemoteNotification",
                    let type = param.type.as(IdentifierTypeSyntax.self),
-                   type.name.text == "UIApplication"
-                {
+                   type.name.text == "UIApplication" {
                     return true
                 }
                 return false

@@ -6,10 +6,18 @@ class PrefetchingAndBackgroundDataVisitor: SyntaxVisitor, Visitable {
         "multipathServiceType": PropertyImpact()
     ]
     
+    private let filePath: String
+    
+    init(filePath: String) {
+        self.filePath = filePath
+        super.init(viewMode: .all)
+    }
+    
     override func visit(_ node: AssignmentExprSyntax) -> SyntaxVisitorContinueKind {
         if let parentNode = node.parent?.as(ExprListSyntax.self) {
             if let memberAccessNode = parentNode.first?.as(MemberAccessExprSyntax.self) {
                 let property = memberAccessNode.declName.baseName.text
+                let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
                 
                 if properties.keys.contains(property),
                    let propertyImpact = properties[property] {
@@ -22,6 +30,7 @@ class PrefetchingAndBackgroundDataVisitor: SyntaxVisitor, Visitable {
                         switch property {
                         case "sessionSendsLaunchEvents":
                             propertyImpact.hasNetworkImpact = boolValue
+                            propertyImpact.location.append((line: location.line, column: location.column))
                         default:
                             break
                         }
@@ -29,11 +38,13 @@ class PrefetchingAndBackgroundDataVisitor: SyntaxVisitor, Visitable {
                         if let stringSegment = stringLiteral.segments.first as? StringSegmentSyntax? {
                             propertyImpact.value = stringSegment?.content.text
                             propertyImpact.hasNetworkImpact = true
+                            propertyImpact.location.append((line: location.line, column: location.column))
                         }
                     } else if property == "multipathServiceType" {
                         if let enumCaseExpr = parentNode.last?.as(MemberAccessExprSyntax.self) {
                             propertyImpact.value = enumCaseExpr.declName.baseName.text
                             propertyImpact.hasNetworkImpact = true
+                            propertyImpact.location.append((line: location.line, column: location.column))
                         }
                     }
                 }
@@ -46,7 +57,10 @@ class PrefetchingAndBackgroundDataVisitor: SyntaxVisitor, Visitable {
         if ((node.base?.as(DeclReferenceExprSyntax.self)) != nil) {
             let property = node.declName.baseName.text
             if properties.keys.contains(property) {
-                properties[property]?.found = true
+                let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
+                let propertyImpact = properties[property]
+                propertyImpact?.found = true
+                propertyImpact?.location.append((line: location.line, column: location.column))
             }
         }
         return .visitChildren
