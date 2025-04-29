@@ -10,6 +10,7 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
         if let parentNode = node.parent?.as(ExprListSyntax.self) {
             if let memberAccessNode = parentNode.first?.as(MemberAccessExprSyntax.self) {
                 let property = memberAccessNode.declName.baseName.text
+                let location = node.startLocation(converter: SourceLocationConverter(fileName: "", tree: node.root))
 
                 if property == "urlCache" {
                     let propertyImpact = properties["urlCacheConfig"]
@@ -17,12 +18,12 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
                     propertyImpact?.hasNetworkImpact = true
 
                     if let sharedAccess = parentNode.last?.as(MemberAccessExprSyntax.self),
-                       sharedAccess.declName.baseName.text == "shared"
-                    {
+                       sharedAccess.declName.baseName.text == "shared" {
                         propertyImpact?.value = "Using URLCache.shared"
                     } else {
                         propertyImpact?.value = "Using custom URLCache configuration"
                     }
+                    propertyImpact?.location.append((line: location.line, column: location.column))
                 }
 
                 if property == "requestCachePolicy" {
@@ -37,6 +38,7 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
                             propertyImpact?.found = true
                             propertyImpact?.hasNetworkImpact = true
                             propertyImpact?.value = "Using cache policy: \(policyName)"
+                            propertyImpact?.location.append((line: location.line, column: location.column))
                         default:
                             break
                         }
@@ -50,12 +52,13 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         if let type = node.calledExpression.as(DeclReferenceExprSyntax.self),
-           type.baseName.text == "URLCache"
-        {
+           type.baseName.text == "URLCache" {
+            let location = node.startLocation(converter: SourceLocationConverter(fileName: "", tree: node.root))
             let propertyImpact = properties["urlCacheConfig"]
             propertyImpact?.found = true
             propertyImpact?.hasNetworkImpact = true
             propertyImpact?.value = "Custom URLCache initialized"
+            propertyImpact?.location.append((line: location.line, column: location.column))
         }
 
         return .visitChildren
