@@ -9,7 +9,7 @@ class CachingVisitorManager {
         self.filePath = filePath
         self.outputPath = outputPath
         visitors = [
-            CachingPolicyVisitor(viewMode: .all),
+            CachingPolicyVisitor(filePath: filePath),
         ]
     }
 

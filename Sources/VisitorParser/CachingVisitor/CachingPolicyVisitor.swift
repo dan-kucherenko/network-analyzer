@@ -5,12 +5,19 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
         "urlCacheConfig": PropertyImpact(),
         "cachePolicy": PropertyImpact(),
     ]
+    
+    private let filePath: String
+    
+    init(filePath: String) {
+        self.filePath = filePath
+        super.init(viewMode: .all)
+    }
 
     override func visit(_ node: AssignmentExprSyntax) -> SyntaxVisitorContinueKind {
         if let parentNode = node.parent?.as(ExprListSyntax.self) {
             if let memberAccessNode = parentNode.first?.as(MemberAccessExprSyntax.self) {
                 let property = memberAccessNode.declName.baseName.text
-                let location = node.startLocation(converter: SourceLocationConverter(fileName: "", tree: node.root))
+                let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
 
                 if property == "urlCache" {
                     let propertyImpact = properties["urlCacheConfig"]
@@ -53,7 +60,7 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         if let type = node.calledExpression.as(DeclReferenceExprSyntax.self),
            type.baseName.text == "URLCache" {
-            let location = node.startLocation(converter: SourceLocationConverter(fileName: "", tree: node.root))
+            let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
             let propertyImpact = properties["urlCacheConfig"]
             propertyImpact?.found = true
             propertyImpact?.hasNetworkImpact = true

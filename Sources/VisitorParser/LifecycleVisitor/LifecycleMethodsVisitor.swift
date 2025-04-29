@@ -5,6 +5,13 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
         "backgroundOperations": PropertyImpact(),
         "resignActiveHandling": PropertyImpact(),
     ]
+    
+    private let filePath: String
+    
+    init(filePath: String) {
+        self.filePath = filePath
+        super.init(viewMode: .all)
+    }
 
     private let suspiciousFunctionNames = [
         "URLSession",
@@ -23,7 +30,7 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         let functionName = node.name.text
-        let location = node.startLocation(converter: SourceLocationConverter(fileName: "", tree: node.root))
+        let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
 
         if functionName == "applicationDidEnterBackground" {
             let propertyImpact = properties["backgroundOperations"]
@@ -71,7 +78,7 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
             if let calledFunction = node.calledExpression.as(MemberAccessExprSyntax.self) {
                 let functionName = calledFunction.declName.baseName.text
                 if suspiciousFunctionNames.contains(functionName) {
-                    let location = node.startLocation(converter: SourceLocationConverter(fileName: "", tree: node.root))
+                    let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
                     let propertyImpact = properties["backgroundOperations"]
                     propertyImpact?.found = true
                     propertyImpact?.hasNetworkImpact = true

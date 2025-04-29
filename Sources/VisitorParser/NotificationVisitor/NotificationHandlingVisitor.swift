@@ -5,6 +5,13 @@ class NotificationHandlingVisitor: SyntaxVisitor, Visitable {
         "contentAvailableFlag": PropertyImpact(),
         "notificationHandling": PropertyImpact(),
     ]
+    
+    private let filePath: String
+    
+    init(filePath: String) {
+        self.filePath = filePath
+        super.init(viewMode: .all)
+    }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         if node.name.text == "application" {
@@ -19,10 +26,12 @@ class NotificationHandlingVisitor: SyntaxVisitor, Visitable {
             }
 
             if hasRemoteNotificationHandling {
+                let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
                 let propertyImpact = properties["notificationHandling"]
                 propertyImpact?.found = true
                 propertyImpact?.hasNetworkImpact = true
                 propertyImpact?.value = "Remote notification handling method found"
+                propertyImpact?.location.append((line: location.line, column: location.column))
             }
         }
 
@@ -34,6 +43,7 @@ class NotificationHandlingVisitor: SyntaxVisitor, Visitable {
             if let key = element.key.as(StringLiteralExprSyntax.self),
                key.segments.first?.description.contains("content-available") == true
             {
+                let location = element.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: element.root))
                 let propertyImpact = properties["contentAvailableFlag"]
                 propertyImpact?.found = true
 
@@ -44,6 +54,7 @@ class NotificationHandlingVisitor: SyntaxVisitor, Visitable {
                         (contentAvailable == "1" ?
                             "App will be notified in foreground and background" :
                             "App will be notified only in foreground")
+                    propertyImpact?.location.append((line: location.line, column: location.column))
                 }
             }
         }

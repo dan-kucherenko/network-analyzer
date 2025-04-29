@@ -9,7 +9,7 @@ class NotificationVisitorManager {
         self.filePath = filePath
         self.outputPath = outputPath
         visitors = [
-            NotificationHandlingVisitor(viewMode: .all),
+            NotificationHandlingVisitor(filePath: filePath),
         ]
     }
 

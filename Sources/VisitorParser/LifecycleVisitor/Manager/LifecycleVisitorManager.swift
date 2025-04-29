@@ -9,7 +9,7 @@ class LifecycleVisitorManager {
         self.filePath = filePath
         self.outputPath = outputPath
         visitors = [
-            LifecycleMethodsVisitor(viewMode: .all),
+            LifecycleMethodsVisitor(filePath: filePath),
         ]
     }
 
