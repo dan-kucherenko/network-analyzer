@@ -23,6 +23,7 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         let functionName = node.name.text
+        let location = node.startLocation(converter: SourceLocationConverter(fileName: "", tree: node.root))
 
         if functionName == "applicationDidEnterBackground" {
             let propertyImpact = properties["backgroundOperations"]
@@ -38,6 +39,7 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
             if hasSuspiciousOperations {
                 propertyImpact?.hasNetworkImpact = true
                 propertyImpact?.value = "Heavy operations detected in applicationDidEnterBackground"
+                propertyImpact?.location.append((line: location.line, column: location.column))
             }
         }
 
@@ -55,6 +57,7 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
             if !hasPauseOperations {
                 propertyImpact?.hasNetworkImpact = true
                 propertyImpact?.value = "No pause/stop operations found in applicationWillResignActive"
+                propertyImpact?.location.append((line: location.line, column: location.column))
             }
         }
 
@@ -68,11 +71,13 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
             if let calledFunction = node.calledExpression.as(MemberAccessExprSyntax.self) {
                 let functionName = calledFunction.declName.baseName.text
                 if suspiciousFunctionNames.contains(functionName) {
+                    let location = node.startLocation(converter: SourceLocationConverter(fileName: "", tree: node.root))
                     let propertyImpact = properties["backgroundOperations"]
                     propertyImpact?.found = true
                     propertyImpact?.hasNetworkImpact = true
                     propertyImpact?.value =
                         "Network call or heavy computation '\(functionName)' detected in background"
+                    propertyImpact?.location.append((line: location.line, column: location.column))
                 }
             }
         }
