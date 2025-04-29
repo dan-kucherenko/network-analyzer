@@ -13,10 +13,10 @@ class PollingVisitorManager {
         ]
     }
 
-    func analyzeSyntaxTree(_ tree: SourceFileSyntax) -> [String] {
-        visitors.map { visitor in
+    func analyzeSyntaxTree(_ tree: SourceFileSyntax) -> [PropertyImpact] {
+        visitors.flatMap { visitor in
             visitor.walk(tree)
-            return visitor.getImpactingSummary(properties: visitor.properties)
-        }.flatMap { $0 }
+            return visitor.properties.values.filter { $0.found && $0.hasNetworkImpact }
+        }
     }
 }

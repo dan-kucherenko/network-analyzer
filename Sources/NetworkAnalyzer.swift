@@ -5,6 +5,23 @@ import SwiftSyntax
 import SwiftUI
 import SymbolKit
 
+struct XcodeDiagnostic {
+    let filePath: String
+    let line: Int
+    let column: Int
+    let message: String
+    let type: DiagnosticType
+    
+    enum DiagnosticType: String {
+        case warning = "warning"
+        case error = "error"
+    }
+    
+    func format() -> String {
+        return "\(filePath):\(line):\(column): \(type.rawValue): \(message)"
+    }
+}
+
 @main
 struct NetworkAnalyzer: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Networking Code Analyzer", version: "0.0.1")
@@ -27,28 +44,45 @@ struct NetworkAnalyzer: ParsableCommand {
         let cachingManager = CachingVisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
         let notificationManager = NotificationVisitorManager(filePath: inputFile, outputPath: outputPath ?? "")
 
-        let urlResults = urlManager.analyzeSyntaxTree(syntaxTree)
-        let pollingResults = pollingManager.analyzeSyntaxTree(syntaxTree)
-        let lifecycleResults = lifecycleManager.analyzeSyntaxTree(syntaxTree)
-        let cachingResults = cachingManager.analyzeSyntaxTree(syntaxTree)
-        let notificationResults = notificationManager.analyzeSyntaxTree(syntaxTree)
+        var diagnostics: [XcodeDiagnostic] = []
+        
+        // Convert PropertyImpact results to Xcode diagnostics
+        func processDiagnostics(_ impacts: [PropertyImpact], category: String) {
+            impacts.forEach { impact in
+                guard let message = impact.value else { return }
+                
+                // Create a diagnostic for each location where the issue was found
+                impact.location.forEach { location in
+                    diagnostics.append(XcodeDiagnostic(
+                        filePath: inputFile,
+                        line: location.line,
+                        column: location.column,
+                        message: "[\(category)] \(message)",
+                        type: .warning
+                    ))
+                }
+            }
+        }
 
-        var allResults: [String] = []
-        allResults.append(contentsOf: urlResults)
-        allResults.append("---")
-        allResults.append(contentsOf: pollingResults)
-        allResults.append("---")
-        allResults.append(contentsOf: lifecycleResults)
-        allResults.append("---")
-        allResults.append(contentsOf: cachingResults)
-        allResults.append("---")
-        allResults.append(contentsOf: notificationResults)
+        // Process results from each visitor
+        let categories: [([PropertyImpact], String)] = [
+            (urlManager.analyzeSyntaxTree(syntaxTree), "URL Usage"),
+            (pollingManager.analyzeSyntaxTree(syntaxTree), "Polling"),
+            (lifecycleManager.analyzeSyntaxTree(syntaxTree), "Lifecycle"),
+            (cachingManager.analyzeSyntaxTree(syntaxTree), "Caching"),
+            (notificationManager.analyzeSyntaxTree(syntaxTree), "Notifications")
+        ]
+        
+        for (results, category) in categories {
+            processDiagnostics(results, category: category)
+        }
 
-        let formattedResults = allResults.joined(separator: "\n")
+        let formattedDiagnostics = diagnostics.map { $0.format() }.joined(separator: "\n")
+        
         if let outputPath = outputPath {
-            try formattedResults.write(toFile: outputPath, atomically: true, encoding: String.Encoding.utf8)
+            try formattedDiagnostics.write(toFile: outputPath, atomically: true, encoding: .utf8)
         } else {
-            print(formattedResults)
+            print(formattedDiagnostics)
         }
     }
 }
