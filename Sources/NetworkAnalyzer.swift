@@ -2,8 +2,6 @@ import ArgumentParser
 import Foundation
 import SwiftParser
 import SwiftSyntax
-import SwiftUI
-import SymbolKit
 
 struct XcodeDiagnostic {
     let filePath: String
