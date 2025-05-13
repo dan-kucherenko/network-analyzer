@@ -77,10 +77,10 @@ struct NetworkAnalyzer: ParsableCommand {
 
         let formattedDiagnostics = diagnostics.map { $0.format() }.joined(separator: "\n")
         
-        if let outputPath = outputPath {
-            try formattedDiagnostics.write(toFile: outputPath, atomically: true, encoding: .utf8)
-        } else {
+//        if let outputPath = outputPath {
+//            try formattedDiagnostics.write(toFile: outputPath, atomically: true, encoding: .utf8)
+//        } else {
             print(formattedDiagnostics)
-        }
+//        }
     }
 }

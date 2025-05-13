@@ -6,7 +6,8 @@ import PackageDescription
 let package = Package(
     name: "network-analyzer",
     platforms: [
-        .macOS(.v15)
+        .macOS(.v15),
+        .iOS(.v13)
     ],
     products: [
         .executable(
