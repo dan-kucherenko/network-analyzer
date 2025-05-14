@@ -33,8 +33,8 @@ class PollingVisitor: SyntaxVisitor, Visitable {
                 let propertyImpact = properties["timerPolling"]
                 propertyImpact?.found = true
                 propertyImpact?.hasNetworkImpact = true
-                propertyImpact?.value = "Timer.scheduledTimer with repeats: true detected"
                 propertyImpact?.location.append((line: location.line, column: location.column))
+                propertyImpact?.recommendation = "Consider using a more appropriate polling mechanism or setting a more appropriate timeout value"
             }
         }
 
@@ -44,7 +44,7 @@ class PollingVisitor: SyntaxVisitor, Visitable {
             let propertyImpact = properties["recursiveDispatchPolling"]
             propertyImpact?.found = true
             propertyImpact?.hasNetworkImpact = true
-            propertyImpact?.value = "DispatchQueue.main.asyncAfter polling detected"
+            propertyImpact?.recommendation = "Doing some heavy stuff on the main thread may be impacting how the app responds"
             propertyImpact?.location.append((line: location.line, column: location.column))
         }
 
@@ -62,7 +62,7 @@ class PollingVisitor: SyntaxVisitor, Visitable {
                 let propertyImpact = properties["infiniteLoopPolling"]
                 propertyImpact?.found = true
                 propertyImpact?.hasNetworkImpact = true
-                propertyImpact?.value = "Infinite loop with Thread.sleep detected"
+                propertyImpact?.recommendation = "Thread.sleep command completely blocks the executing thread, preventing it from performing any other work. If run on the main thread, this would freeze the UI entirely."
                 propertyImpact?.location.append((line: location.line, column: location.column))
             }
         }

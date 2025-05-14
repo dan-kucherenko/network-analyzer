@@ -33,6 +33,7 @@ class HttpVisitor: SyntaxVisitor, Visitable {
                         case "httpShouldSetCookies":
                             propertyImpact.hasNetworkImpact = boolValue
                             propertyImpact.location.append((line: location.line, column: location.column))
+                            propertyImpact.recommendation = "Consider disabling cookie handling by setting httpShouldSetCookies to false if not required for your API calls."
                         case "httpShouldUsePipelining":
                             propertyImpact.hasNetworkImpact = !boolValue
                             propertyImpact.location.append((line: location.line, column: location.column))
@@ -46,10 +47,12 @@ class HttpVisitor: SyntaxVisitor, Visitable {
                             propertyImpact.value = enumCase
                             propertyImpact.hasNetworkImpact = (enumCase.elementsEqual("never")) ? false : true
                             propertyImpact.location.append((line: location.line, column: location.column))
+                            propertyImpact.recommendation = "Consider using .onlyFromMainDocumentDomain policy for cookie acceptance to accept only needed cookies from the main document domain."
                         }
                     } else if property == "httpAdditionalHeaders" {
                         propertyImpact.hasNetworkImpact = true
                         propertyImpact.location.append((line: location.line, column: location.column))
+                        propertyImpact.recommendation = "Review and optimize additional headers to include only necessary ones for your API calls. Unnecessary headers increase request size and processing overhead."
                     }
                 }
             }

@@ -47,22 +47,22 @@ struct NetworkAnalyzer: ParsableCommand {
         // Convert PropertyImpact results to Xcode diagnostics
         func processDiagnostics(_ impacts: [PropertyImpact], category: String) {
             impacts.forEach { impact in
-                guard let message = impact.value else { return }
+                guard let currentValue = impact.value else { return }
                 
                 // Create a diagnostic for each location where the issue was found
                 impact.location.forEach { location in
+                    let recommendation = impact.recommendation ?? "No recommendation"
                     diagnostics.append(XcodeDiagnostic(
                         filePath: inputFile,
                         line: location.line,
                         column: location.column,
-                        message: "[\(category)] \(message)",
+                        message: "\(recommendation) Current value is: \(currentValue)",
                         type: .warning
                     ))
                 }
             }
         }
 
-        // Process results from each visitor
         let categories: [([PropertyImpact], String)] = [
             (urlManager.analyzeSyntaxTree(syntaxTree), "URL Usage"),
             (pollingManager.analyzeSyntaxTree(syntaxTree), "Polling"),
@@ -76,11 +76,6 @@ struct NetworkAnalyzer: ParsableCommand {
         }
 
         let formattedDiagnostics = diagnostics.map { $0.format() }.joined(separator: "\n")
-        
-//        if let outputPath = outputPath {
-//            try formattedDiagnostics.write(toFile: outputPath, atomically: true, encoding: .utf8)
-//        } else {
-            print(formattedDiagnostics)
-//        }
+        print(formattedDiagnostics)
     }
 }

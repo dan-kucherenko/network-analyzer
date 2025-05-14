@@ -45,7 +45,7 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
 
             if hasSuspiciousOperations {
                 propertyImpact?.hasNetworkImpact = true
-                propertyImpact?.value = "Heavy operations detected in applicationDidEnterBackground"
+                propertyImpact?.recommendation = "Heavy operations detected in applicationDidEnterBackground"
                 propertyImpact?.location.append((line: location.line, column: location.column))
             }
         }
@@ -63,7 +63,7 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
 
             if !hasPauseOperations {
                 propertyImpact?.hasNetworkImpact = true
-                propertyImpact?.value = "No pause/stop operations found in applicationWillResignActive"
+                propertyImpact?.recommendation = "No pause/stop operations found in applicationWillResignActive"
                 propertyImpact?.location.append((line: location.line, column: location.column))
             }
         }
@@ -82,7 +82,7 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
                     let propertyImpact = properties["backgroundOperations"]
                     propertyImpact?.found = true
                     propertyImpact?.hasNetworkImpact = true
-                    propertyImpact?.value =
+                    propertyImpact?.recommendation =
                         "Network call or heavy computation '\(functionName)' detected in background"
                     propertyImpact?.location.append((line: location.line, column: location.column))
                 }

@@ -31,6 +31,7 @@ class NotificationHandlingVisitor: SyntaxVisitor, Visitable {
                 propertyImpact?.hasNetworkImpact = true
                 propertyImpact?.value = "Remote notification handling method found"
                 propertyImpact?.location.append((line: location.line, column: location.column))
+                propertyImpact?.recommendation = "Implement efficient background fetch logic in didReceiveRemoteNotification. Avoid heavy processing, always call the fetch completion handler promptly, and test for both foreground and background scenarios."
             }
         }
 
@@ -54,6 +55,12 @@ class NotificationHandlingVisitor: SyntaxVisitor, Visitable {
                             "App will be notified in foreground and background" :
                             "App will be notified only in foreground")
                     propertyImpact?.location.append((line: location.line, column: location.column))
+
+                    if contentAvailable == "1" {
+                        propertyImpact?.recommendation = "Use the content-available flag only when your app truly needs background fetch. Unnecessary use can negatively impact battery life. Minimize background work and always call the fetch completion handler promptly."
+                    } else {
+                        propertyImpact?.recommendation = "content-available: 0 means the notification will not wake your app in the background. Use this for foreground-only notifications."
+                    }
                 }
             }
         }

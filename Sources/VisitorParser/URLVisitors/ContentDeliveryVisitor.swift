@@ -28,11 +28,13 @@ class ContentDeliveryVisitor: SyntaxVisitor, Visitable {
                         propertyImpact.value = intLiteral.literal.text
                         propertyImpact.hasNetworkImpact = (Int(intLiteral.literal.text) ?? 0) > 6
                         propertyImpact.location.append((line: location.line, column: location.column))
+                        propertyImpact.recommendation = "Consider setting a more appropriate value for httpMaximumConnectionsPerHost. Default value is 6 for cellular and 4 for wifi"
                     } else if let boolLiteral = parentNode.last?.as(BooleanLiteralExprSyntax.self),
                               property == "allowsExpensiveNetworkAccess" {
                         propertyImpact.value = boolLiteral.literal.text
                         propertyImpact.hasNetworkImpact = boolLiteral.literal.text == "true"
                         propertyImpact.location.append((line: location.line, column: location.column))
+                        propertyImpact.recommendation = "Consider setting allowsExpensiveNetworkAccess to false if your app does not require access to expensive networks"
                     }
 
                     properties[property] = propertyImpact

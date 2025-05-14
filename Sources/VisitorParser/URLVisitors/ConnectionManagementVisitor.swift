@@ -32,9 +32,11 @@ class ConnectionVisitor: SyntaxVisitor, Visitable {
                         case "allowsCellularAccess":
                             propertyImpact.hasNetworkImpact = !boolValue
                             propertyImpact.location.append((line: location.line, column: location.column))
+                            propertyImpact.recommendation = "Consider setting allowsCellularAccess to false if your app does not require access to cellular networks"
                         case "waitsForConnectivity":
                             propertyImpact.hasNetworkImpact = boolValue
                             propertyImpact.location.append((line: location.line, column: location.column))
+                            propertyImpact.recommendation = "Consider setting waitsForConnectivity to true for better app performance"
                         default:
                             break
                         }
@@ -44,8 +46,9 @@ class ConnectionVisitor: SyntaxVisitor, Visitable {
                         let enumCase = enumCaseExpr.declName.baseName.text
                         if property == "networkServiceType" {
                             propertyImpact.value = enumCase
-                            propertyImpact.hasNetworkImpact = (enumCase != "background")
+                            propertyImpact.hasNetworkImpact = (enumCase != "background" || enumCase != "default")
                             propertyImpact.location.append((line: location.line, column: location.column))
+                            propertyImpact.recommendation = "Check the usage of networkServiceType. Default value is 'default'. .video, .voice, .responsiveData, .avStreaming may impact the network if not needed"
                         }
                     }
                 }

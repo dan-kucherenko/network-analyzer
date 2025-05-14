@@ -27,9 +27,24 @@ class DataCachingVisitor: SyntaxVisitor, Visitable {
                         propertyImpact.value = booleanLiteral.literal.text
                         propertyImpact.hasNetworkImpact = true
                         propertyImpact.location.append((line: location.line, column: location.column))
-                    } else if property == "urlCache" || property == "requestCachePolicy" {
+                        propertyImpact.recommendation = "Consider implementing a custom URLCache with appropriate memory and disk capacity limits for your app's needs. This will help manage memory usage and improve performance."
+                    } else if property == "urlCache" {
                         propertyImpact.hasNetworkImpact = true
                         propertyImpact.location.append((line: location.line, column: location.column))
+                        propertyImpact.recommendation = "Implement a custom URLCache with appropriate memory and disk capacity limits. The default shared cache might not be optimal for your app's specific needs."
+                    } else if property == "requestCachePolicy" {
+                        propertyImpact.hasNetworkImpact = true
+                        propertyImpact.location.append((line: location.line, column: location.column))
+
+                        if let policyAccess = parentNode.last?.as(MemberAccessExprSyntax.self) {
+                            let policyName = policyAccess.declName.baseName.text
+                            propertyImpact.value = policyName
+                            if policyName == "returnCacheDataDontLoad" {
+                                propertyImpact.recommendation = "Using .returnCacheDataDontLoad may result in stale data. Make sure this is intended for your use case."
+                            } else if policyName == "reloadIgnoringCacheData" {
+                                propertyImpact.recommendation = "Using .reloadIgnoringCacheData will always fetch from the network, which may increase data usage and reduce performance. Use only if fresh data is critical."
+                            }
+                        }
                     }
                 }
             }
@@ -45,6 +60,21 @@ class DataCachingVisitor: SyntaxVisitor, Visitable {
             propertyImpact?.found = true
             propertyImpact?.hasNetworkImpact = true
             propertyImpact?.location.append((line: location.line, column: location.column))
+            
+            if property == "urlCache" {
+                propertyImpact?.recommendation = "Consider implementing a custom URLCache with appropriate memory and disk capacity limits. The default shared cache might not be optimal for your app's specific needs."
+            } else if property == "requestCachePolicy" {
+                if let parent = node.parent?.as(InfixOperatorExprSyntax.self),
+                   let right = parent.rightOperand.as(MemberAccessExprSyntax.self) {
+                    let policyName = right.declName.baseName.text
+                    propertyImpact?.value = policyName
+                    if policyName == "returnCacheDataDontLoad" {
+                        propertyImpact?.recommendation = "Using .returnCacheDataDontLoad may result in stale data. Make sure this is intended for your use case."
+                    } else if policyName == "reloadIgnoringCacheData" {
+                        propertyImpact?.recommendation = "Using .reloadIgnoringCacheData will always fetch from the network, which may increase data usage and reduce performance. Use only if fresh data is critical"
+                    }
+                }
+            }
         }
         return .visitChildren
     }

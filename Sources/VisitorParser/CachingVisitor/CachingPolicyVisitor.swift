@@ -26,9 +26,9 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
 
                     if let sharedAccess = parentNode.last?.as(MemberAccessExprSyntax.self),
                        sharedAccess.declName.baseName.text == "shared" {
-                        propertyImpact?.value = "Using URLCache.shared"
+                        propertyImpact?.recommendation = "Using URLCache.shared"
                     } else {
-                        propertyImpact?.value = "Using custom URLCache configuration"
+                        propertyImpact?.recommendation = "Using custom URLCache configuration"
                     }
                     propertyImpact?.location.append((line: location.line, column: location.column))
                 }
@@ -38,16 +38,26 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
                         let policyName = policyAccess.declName.baseName.text
                         let propertyImpact = properties["cachePolicy"]
 
-                        switch policyName {
-                        case "useProtocolCachePolicy",
-                             "returnCacheDataElseLoad",
-                             "returnCacheDataDontLoad":
+                        let recognizedPolicies = [
+                            "useProtocolCachePolicy",
+                            "returnCacheDataElseLoad",
+                            "returnCacheDataDontLoad"
+                        ]
+                        if recognizedPolicies.contains(policyName) {
                             propertyImpact?.found = true
                             propertyImpact?.hasNetworkImpact = true
                             propertyImpact?.value = "Using cache policy: \(policyName)"
                             propertyImpact?.location.append((line: location.line, column: location.column))
-                        default:
-                            break
+                            switch policyName {
+                            case "useProtocolCachePolicy":
+                                propertyImpact?.recommendation = "UseProtocolCachePolicy is the default. It uses the protocol cache if available. Consider if this is optimal for your app's needs."
+                            case "returnCacheDataElseLoad":
+                                propertyImpact?.recommendation = "ReturnCacheDataElseLoad will use the cache if available, otherwise it will load from the server. Good for offline support."
+                            case "returnCacheDataDontLoad":
+                                propertyImpact?.recommendation = "ReturnCacheDataDontLoad will only use the cache if available, otherwise it will not load from the server. Use with caution to avoid stale data."
+                            default:
+                                break
+                            }
                         }
                     }
                 }

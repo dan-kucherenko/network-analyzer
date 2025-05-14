@@ -39,10 +39,8 @@ extension NetworkAnalyzerPlugin: XcodeBuildToolPlugin {
         context: XcodePluginContext,
         target: XcodeTarget
     ) throws -> [Command] {
-        // Get all Swift source files
         let swiftFiles = target.inputFiles.filter { $0.url.pathExtension == "swift" }
         
-        // Create a command for each Swift file
         return try swiftFiles.map {
             let inputPath = $0.url
             

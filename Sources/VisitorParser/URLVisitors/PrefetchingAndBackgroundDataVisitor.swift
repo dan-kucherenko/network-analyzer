@@ -31,6 +31,7 @@ class PrefetchingAndBackgroundDataVisitor: SyntaxVisitor, Visitable {
                         case "sessionSendsLaunchEvents":
                             propertyImpact.hasNetworkImpact = boolValue
                             propertyImpact.location.append((line: location.line, column: location.column))
+                            propertyImpact.recommendation = "Consider setting sessionSendsLaunchEvents to false if your app does not require access to launch events"
                         default:
                             break
                         }
@@ -42,9 +43,11 @@ class PrefetchingAndBackgroundDataVisitor: SyntaxVisitor, Visitable {
                         }
                     } else if property == "multipathServiceType" {
                         if let enumCaseExpr = parentNode.last?.as(MemberAccessExprSyntax.self) {
-                            propertyImpact.value = enumCaseExpr.declName.baseName.text
-                            propertyImpact.hasNetworkImpact = true
+                            let currentValue = enumCaseExpr.declName.baseName.text
+                            propertyImpact.value = currentValue
+                            propertyImpact.hasNetworkImpact = currentValue == "aggregate"
                             propertyImpact.location.append((line: location.line, column: location.column))
+                            propertyImpact.recommendation = "Consider setting a more appropriate value for multipathServiceType. Aggregate may impact the network if not needed"
                         }
                     }
                 }
