@@ -18,18 +18,14 @@ struct NetworkAnalyzerPlugin: BuildToolPlugin {
         // Create a command for each Swift file
         return try swiftFiles.map {
             let inputPath = $0.url
-            let outputPath = URL(fileURLWithPath: context.pluginWorkDirectoryURL.path)
-                .appendingPathComponent("\(inputPath.deletingPathExtension().lastPathComponent).network-analysis.txt")
             
             return .buildCommand(
                 displayName: "Analyzing network usage in \(inputPath.lastPathComponent)",
                 executable: try context.tool(named: "network-analyzer").url,
                 arguments: [
-                    "-i", inputPath.path,
-                    "-o", outputPath.path
+                    "-i", inputPath.path
                 ],
                 inputFiles: [inputPath.standardizedFileURL],
-                outputFiles: [outputPath]
             )
         }
     }
@@ -49,15 +45,12 @@ extension NetworkAnalyzerPlugin: XcodeBuildToolPlugin {
         // Create a command for each Swift file
         return try swiftFiles.map {
             let inputPath = $0.url
-            let outputPath = URL(fileURLWithPath: context.pluginWorkDirectoryURL.path)
-                .appendingPathComponent("\(inputPath.deletingPathExtension().lastPathComponent).network-analysis.txt")
             
             return .buildCommand(
                 displayName: "Analyzing network usage in \(inputPath.lastPathComponent)",
                 executable: try context.tool(named: "network-analyzer").url,
                 arguments: [
-                    "-i", inputPath.path,
-                    "-o", outputPath.path
+                    "-i", inputPath.path
                 ],
                 inputFiles: [inputPath.standardizedFileURL]
             )
