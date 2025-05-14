@@ -34,7 +34,7 @@ class ConnectionVisitor: SyntaxVisitor, Visitable {
                             propertyImpact.location.append((line: location.line, column: location.column))
                             propertyImpact.recommendation = "Consider setting allowsCellularAccess to false if your app does not require access to cellular networks"
                         case "waitsForConnectivity":
-                            propertyImpact.hasNetworkImpact = boolValue
+                            propertyImpact.hasNetworkImpact = !boolValue
                             propertyImpact.location.append((line: location.line, column: location.column))
                             propertyImpact.recommendation = "Consider setting waitsForConnectivity to true for better app performance"
                         default:
