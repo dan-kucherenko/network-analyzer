@@ -7,15 +7,12 @@ struct NetworkAnalyzerPlugin: BuildToolPlugin {
         context: PluginContext,
         target: Target
     ) throws -> [Command] {
-        // Only process source module targets
         guard let target = target as? SourceModuleTarget else {
             return []
         }
         
-        // Get all Swift source files
         let swiftFiles = target.sourceFiles(withSuffix: "swift")
         
-        // Create a command for each Swift file
         return try swiftFiles.map {
             let inputPath = $0.url
             
