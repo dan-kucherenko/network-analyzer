@@ -5,7 +5,7 @@ class PrefetchingAndBackgroundDataVisitor: SyntaxVisitor, Visitable {
         "sessionSendsLaunchEvents",
         "multipathServiceType"
     ]
-    var warnings: [XcodeDiagnostic] = []
+    var warnings: [AntipatternWarning] = []
     
     private let filePath: String
     
@@ -51,7 +51,7 @@ private extension PrefetchingAndBackgroundDataVisitor {
         if let booleanLiteral = parentNode.last?.as(BooleanLiteralExprSyntax.self) {
             let boolValue = booleanLiteral.literal.text == "true"
             if boolValue {
-                warnings.append(XcodeDiagnostic(
+                warnings.append(AntipatternWarning(
                     filePath: filePath,
                     line: location.line,
                     column: location.column,
@@ -65,7 +65,7 @@ private extension PrefetchingAndBackgroundDataVisitor {
         if let enumCaseExpr = parentNode.last?.as(MemberAccessExprSyntax.self) {
             let currentValue = enumCaseExpr.declName.baseName.text
             if currentValue == "aggregate" {
-                warnings.append(XcodeDiagnostic(
+                warnings.append(AntipatternWarning(
                     filePath: filePath,
                     line: location.line,
                     column: location.column,
@@ -85,7 +85,7 @@ private extension PrefetchingAndBackgroundDataVisitor {
             "Prefetching property '\(property)' is being accessed. Review its configuration for optimal network performance."
         }
         
-        warnings.append(XcodeDiagnostic(
+        warnings.append(AntipatternWarning(
             filePath: filePath,
             line: location.line,
             column: location.column,

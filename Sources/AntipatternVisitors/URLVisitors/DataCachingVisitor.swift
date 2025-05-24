@@ -5,7 +5,7 @@ class DataCachingVisitor: SyntaxVisitor, Visitable {
         "urlCache",
         "requestCachePolicy"
     ]
-    var warnings: [XcodeDiagnostic] = []
+    var warnings: [AntipatternWarning] = []
     
     private let filePath: String
     
@@ -55,7 +55,7 @@ class DataCachingVisitor: SyntaxVisitor, Visitable {
 private extension DataCachingVisitor {
     func handleURLCacheAssignment(parentNode: ExprListSyntax, location: SourceLocation) {
         if let booleanLiteral = parentNode.last?.as(BooleanLiteralExprSyntax.self) {
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,
@@ -63,14 +63,14 @@ private extension DataCachingVisitor {
             ))
         } else if let sharedAccess = parentNode.last?.as(MemberAccessExprSyntax.self),
                   sharedAccess.declName.baseName.text == "shared" {
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,
                 message: "Using shared URLCache. Consider implementing a custom URLCache with appropriate memory and disk capacity limits. The default shared cache might not be optimal for your app's specific needs."
             ))
         } else {
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,
@@ -84,7 +84,7 @@ private extension DataCachingVisitor {
             let policyName = policyAccess.declName.baseName.text
             let recommendation = getCachePolicyRecommendation(policyName: policyName)
             
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,
@@ -94,7 +94,7 @@ private extension DataCachingVisitor {
     }
     
     func handleURLCacheAccess(location: SourceLocation) {
-        warnings.append(XcodeDiagnostic(
+        warnings.append(AntipatternWarning(
             filePath: filePath,
             line: location.line,
             column: location.column,
@@ -108,7 +108,7 @@ private extension DataCachingVisitor {
             let policyName = right.declName.baseName.text
             let recommendation = getCachePolicyRecommendation(policyName: policyName)
             
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,

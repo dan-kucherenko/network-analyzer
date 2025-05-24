@@ -5,7 +5,7 @@ class ContentDeliveryVisitor: SyntaxVisitor, Visitable {
         "httpMaximumConnectionsPerHost",
         "allowsExpensiveNetworkAccess"
     ]
-    var warnings: [XcodeDiagnostic] = []
+    var warnings: [AntipatternWarning] = []
     
     private let filePath: String
     
@@ -25,7 +25,7 @@ class ContentDeliveryVisitor: SyntaxVisitor, Visitable {
                        property == "httpMaximumConnectionsPerHost" {
                         let connections = Int(intLiteral.literal.text) ?? 0
                         if connections > 6 {
-                            warnings.append(XcodeDiagnostic(
+                            warnings.append(AntipatternWarning(
                                 filePath: filePath,
                                 line: location.line,
                                 column: location.column,
@@ -35,7 +35,7 @@ class ContentDeliveryVisitor: SyntaxVisitor, Visitable {
                     } else if let boolLiteral = parentNode.last?.as(BooleanLiteralExprSyntax.self),
                               property == "allowsExpensiveNetworkAccess" {
                         if boolLiteral.literal.text == "true" {
-                            warnings.append(XcodeDiagnostic(
+                            warnings.append(AntipatternWarning(
                                 filePath: filePath,
                                 line: location.line,
                                 column: location.column,
@@ -54,7 +54,7 @@ class ContentDeliveryVisitor: SyntaxVisitor, Visitable {
             let property = node.declName.baseName.text
             if properties.contains(property) {
                 let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
-                warnings.append(XcodeDiagnostic(
+                warnings.append(AntipatternWarning(
                     filePath: filePath,
                     line: location.line,
                     column: location.column,

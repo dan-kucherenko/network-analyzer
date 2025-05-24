@@ -6,7 +6,7 @@ class ConnectionVisitor: SyntaxVisitor, Visitable {
         "networkServiceType",
         "waitsForConnectivity"
     ]
-    var warnings: [XcodeDiagnostic] = []
+    var warnings: [AntipatternWarning] = []
     
     private let filePath: String
     
@@ -54,7 +54,7 @@ private extension ConnectionVisitor {
         if let booleanLiteral = parentNode.last?.as(BooleanLiteralExprSyntax.self) {
             let boolValue = booleanLiteral.literal.text == "true"
             if boolValue {
-                warnings.append(XcodeDiagnostic(
+                warnings.append(AntipatternWarning(
                     filePath: filePath,
                     line: location.line,
                     column: location.column,
@@ -68,7 +68,7 @@ private extension ConnectionVisitor {
         if let booleanLiteral = parentNode.last?.as(BooleanLiteralExprSyntax.self) {
             let boolValue = booleanLiteral.literal.text == "true"
             if !boolValue {
-                warnings.append(XcodeDiagnostic(
+                warnings.append(AntipatternWarning(
                     filePath: filePath,
                     line: location.line,
                     column: location.column,
@@ -82,7 +82,7 @@ private extension ConnectionVisitor {
         if let enumCaseExpr = parentNode.last?.as(MemberAccessExprSyntax.self) {
             let enumCase = enumCaseExpr.declName.baseName.text
             if enumCase != "default" && enumCase != "background" {
-                warnings.append(XcodeDiagnostic(
+                warnings.append(AntipatternWarning(
                     filePath: filePath,
                     line: location.line,
                     column: location.column,
@@ -104,7 +104,7 @@ private extension ConnectionVisitor {
             "Connection property '\(property)' is being accessed. Review its configuration for optimal network performance."
         }
         
-        warnings.append(XcodeDiagnostic(
+        warnings.append(AntipatternWarning(
             filePath: filePath,
             line: location.line,
             column: location.column,

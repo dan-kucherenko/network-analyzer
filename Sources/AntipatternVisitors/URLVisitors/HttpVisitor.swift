@@ -7,7 +7,7 @@ class HttpVisitor: SyntaxVisitor, Visitable {
         "httpCookieAcceptPolicy",
         "httpShouldUsePipelining"
     ]
-    var warnings: [XcodeDiagnostic] = []
+    var warnings: [AntipatternWarning] = []
     
     private let filePath: String
     
@@ -57,7 +57,7 @@ private extension HttpVisitor {
         if let booleanLiteral = parentNode.last?.as(BooleanLiteralExprSyntax.self) {
             let boolValue = booleanLiteral.literal.text == "true"
             if boolValue {
-                warnings.append(XcodeDiagnostic(
+                warnings.append(AntipatternWarning(
                     filePath: filePath,
                     line: location.line,
                     column: location.column,
@@ -71,7 +71,7 @@ private extension HttpVisitor {
         if let booleanLiteral = parentNode.last?.as(BooleanLiteralExprSyntax.self) {
             let boolValue = booleanLiteral.literal.text == "true"
             if !boolValue {
-                warnings.append(XcodeDiagnostic(
+                warnings.append(AntipatternWarning(
                     filePath: filePath,
                     line: location.line,
                     column: location.column,
@@ -85,7 +85,7 @@ private extension HttpVisitor {
         if let enumCaseExpr = parentNode.last?.as(MemberAccessExprSyntax.self) {
             let enumCase = enumCaseExpr.declName.baseName.text
             if enumCase != "onlyFromMainDocumentDomain" {
-                warnings.append(XcodeDiagnostic(
+                warnings.append(AntipatternWarning(
                     filePath: filePath,
                     line: location.line,
                     column: location.column,
@@ -96,7 +96,7 @@ private extension HttpVisitor {
     }
     
     func handleAdditionalHeadersAssignment(location: SourceLocation) {
-        warnings.append(XcodeDiagnostic(
+        warnings.append(AntipatternWarning(
             filePath: filePath,
             line: location.line,
             column: location.column,
@@ -118,7 +118,7 @@ private extension HttpVisitor {
             "HTTP property '\(property)' is being accessed. Review its configuration for optimal network performance."
         }
         
-        warnings.append(XcodeDiagnostic(
+        warnings.append(AntipatternWarning(
             filePath: filePath,
             line: location.line,
             column: location.column,

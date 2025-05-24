@@ -2,7 +2,7 @@ import SwiftSyntax
 
 protocol Visitable: SyntaxVisitor {
     var properties: [String] { get set }
-    var warnings: [XcodeDiagnostic] { get set }
+    var warnings: [AntipatternWarning] { get set }
 //    func getImpactingSummary(properties: [String: PropertyImpact]) -> [String]
 }
 

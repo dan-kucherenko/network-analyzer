@@ -6,7 +6,7 @@ class NotificationHandlingVisitor: SyntaxVisitor, Visitable {
     var properties: [String] = [
         "notificationHandling"
     ]
-    var warnings: [XcodeDiagnostic] = []
+    var warnings: [AntipatternWarning] = []
     private var currentClass: String?
     private var currentFunction: String?
     private var currentLocation: SourceLocation?
@@ -65,7 +65,7 @@ class NotificationHandlingVisitor: SyntaxVisitor, Visitable {
         }
 
         warnings.append(
-            XcodeDiagnostic(
+            AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,

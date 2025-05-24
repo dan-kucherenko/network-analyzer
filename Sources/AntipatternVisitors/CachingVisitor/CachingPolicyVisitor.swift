@@ -5,7 +5,7 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
         "urlCacheConfig",
         "cachePolicy"
     ]
-    var warnings: [XcodeDiagnostic] = []
+    var warnings: [AntipatternWarning] = []
     
     private let filePath: String
     
@@ -39,7 +39,7 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
            type.baseName.text == "URLCache" {
             let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
             
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,
@@ -54,14 +54,14 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
 private extension CachingPolicyVisitor {
     func handleUrlCache(node: MemberAccessExprSyntax?, at location: SourceLocation) {
         if node?.declName.baseName.text == "shared" {
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,
                 message: "Using URLCache.shared. Consider implementing a custom URLCache with appropriate memory and disk capacity limits for your app's needs."
             ))
         } else {
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,
@@ -91,7 +91,7 @@ private extension CachingPolicyVisitor {
                 break
             }
             
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,

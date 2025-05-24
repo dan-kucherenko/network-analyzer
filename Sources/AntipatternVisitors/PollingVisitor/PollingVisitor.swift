@@ -6,7 +6,7 @@ class PollingVisitor: SyntaxVisitor, Visitable {
         "recursiveDispatchPolling",
         "infiniteLoopPolling"
     ]
-    var warnings: [XcodeDiagnostic] = []
+    var warnings: [AntipatternWarning] = []
     
     private let filePath: String
     
@@ -49,7 +49,7 @@ private extension PollingVisitor {
         if hasRepeatsTrue {
             let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
             
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,
@@ -66,7 +66,7 @@ private extension PollingVisitor {
         
         let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
         
-        warnings.append(XcodeDiagnostic(
+        warnings.append(AntipatternWarning(
             filePath: filePath,
             line: location.line,
             column: location.column,
@@ -85,7 +85,7 @@ private extension PollingVisitor {
             }
             
             let location = statement.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: statement.root))
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,

@@ -5,7 +5,7 @@ class LifecycleMethodsVisitor: SyntaxVisitor, Visitable {
         "backgroundOperations",
         "resignActiveHandling"
     ]
-    var warnings: [XcodeDiagnostic] = []
+    var warnings: [AntipatternWarning] = []
     
     private let filePath: String
     private let suspiciousFunctionNames = [
@@ -64,7 +64,7 @@ private extension LifecycleMethodsVisitor {
         } ?? false
 
         if hasSuspiciousOperations {
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,
@@ -81,7 +81,7 @@ private extension LifecycleMethodsVisitor {
         } ?? false
 
         if !hasPauseOperations {
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,
@@ -93,7 +93,7 @@ private extension LifecycleMethodsVisitor {
     func handleBackgroundFunctionCall(node: FunctionCallExprSyntax, functionName: String) {
         if suspiciousFunctionNames.contains(functionName) {
             let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
-            warnings.append(XcodeDiagnostic(
+            warnings.append(AntipatternWarning(
                 filePath: filePath,
                 line: location.line,
                 column: location.column,

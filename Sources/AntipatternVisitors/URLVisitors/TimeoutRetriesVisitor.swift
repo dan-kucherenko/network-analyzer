@@ -5,7 +5,7 @@ class TimeoutAndRetryVisitor: SyntaxVisitor, Visitable {
         "timeoutIntervalForRequest",
         "timeoutIntervalForResource"
     ]
-    var warnings: [XcodeDiagnostic] = []
+    var warnings: [AntipatternWarning] = []
     
     private let filePath: String
     
@@ -27,7 +27,7 @@ class TimeoutAndRetryVisitor: SyntaxVisitor, Visitable {
                     switch property {
                     case "timeoutIntervalForRequest":
                         if let timeout = timeoutValue, timeout < 30 || timeout > 120 {
-                            warnings.append(XcodeDiagnostic(
+                            warnings.append(AntipatternWarning(
                                 filePath: filePath,
                                 line: location.line,
                                 column: location.column,
@@ -36,7 +36,7 @@ class TimeoutAndRetryVisitor: SyntaxVisitor, Visitable {
                         }
                     case "timeoutIntervalForResource":
                         if let timeout = timeoutValue, timeout < 3600 || timeout > 3600 * 60 * 3 {
-                            warnings.append(XcodeDiagnostic(
+                            warnings.append(AntipatternWarning(
                                 filePath: filePath,
                                 line: location.line,
                                 column: location.column,
@@ -57,7 +57,7 @@ class TimeoutAndRetryVisitor: SyntaxVisitor, Visitable {
             let property = node.declName.baseName.text
             if properties.contains(property) {
                 let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
-                warnings.append(XcodeDiagnostic(
+                warnings.append(AntipatternWarning(
                     filePath: filePath,
                     line: location.line,
                     column: location.column,
