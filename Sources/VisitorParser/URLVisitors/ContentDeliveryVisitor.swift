@@ -1,10 +1,11 @@
 import SwiftSyntax
 
 class ContentDeliveryVisitor: SyntaxVisitor, Visitable {
-    var properties: [String: PropertyImpact] = [
-        "httpMaximumConnectionsPerHost": PropertyImpact(),
-        "allowsExpensiveNetworkAccess": PropertyImpact()
+    var properties: [String] = [
+        "httpMaximumConnectionsPerHost",
+        "allowsExpensiveNetworkAccess"
     ]
+    var warnings: [XcodeDiagnostic] = []
     
     private let filePath: String
     
@@ -19,25 +20,29 @@ class ContentDeliveryVisitor: SyntaxVisitor, Visitable {
                 let property = memberAccessNode.declName.baseName.text
                 let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
 
-                if properties.keys.contains(property),
-                   let propertyImpact = properties[property] {
-                    propertyImpact.found = true
-
+                if properties.contains(property) {
                     if let intLiteral = parentNode.last?.as(IntegerLiteralExprSyntax.self),
                        property == "httpMaximumConnectionsPerHost" {
-                        propertyImpact.value = intLiteral.literal.text
-                        propertyImpact.hasNetworkImpact = (Int(intLiteral.literal.text) ?? 0) > 6
-                        propertyImpact.location.append((line: location.line, column: location.column))
-                        propertyImpact.recommendation = "Consider setting a more appropriate value for httpMaximumConnectionsPerHost. Default value is 6 for cellular and 4 for wifi"
+                        let connections = Int(intLiteral.literal.text) ?? 0
+                        if connections > 6 {
+                            warnings.append(XcodeDiagnostic(
+                                filePath: filePath,
+                                line: location.line,
+                                column: location.column,
+                                message: "Consider setting a more appropriate value for httpMaximumConnectionsPerHost. Default value is 6 for cellular and 4 for wifi. Current value is: \(connections)"
+                            ))
+                        }
                     } else if let boolLiteral = parentNode.last?.as(BooleanLiteralExprSyntax.self),
                               property == "allowsExpensiveNetworkAccess" {
-                        propertyImpact.value = boolLiteral.literal.text
-                        propertyImpact.hasNetworkImpact = boolLiteral.literal.text == "true"
-                        propertyImpact.location.append((line: location.line, column: location.column))
-                        propertyImpact.recommendation = "Consider setting allowsExpensiveNetworkAccess to false if your app does not require access to expensive networks"
+                        if boolLiteral.literal.text == "true" {
+                            warnings.append(XcodeDiagnostic(
+                                filePath: filePath,
+                                line: location.line,
+                                column: location.column,
+                                message: "Consider setting allowsExpensiveNetworkAccess to false if your app does not require access to expensive networks. Current value is: true"
+                            ))
+                        }
                     }
-
-                    properties[property] = propertyImpact
                 }
             }
         }
@@ -47,11 +52,14 @@ class ContentDeliveryVisitor: SyntaxVisitor, Visitable {
     override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
         if ((node.base?.as(DeclReferenceExprSyntax.self)) != nil) {
             let property = node.declName.baseName.text
-            if properties.keys.contains(property) {
+            if properties.contains(property) {
                 let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
-                let propertyImpact = properties[property]
-                propertyImpact?.found = true
-                propertyImpact?.location.append((line: location.line, column: location.column))
+                warnings.append(XcodeDiagnostic(
+                    filePath: filePath,
+                    line: location.line,
+                    column: location.column,
+                    message: "Content delivery property '\(property)' is being accessed. Make sure to set appropriate values for optimal network performance."
+                ))
             }
         }
         return .visitChildren
