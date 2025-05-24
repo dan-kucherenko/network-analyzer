@@ -22,11 +22,11 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
                 let location = node.startLocation(converter: SourceLocationConverter(fileName: filePath, tree: node.root))
                 
                 if property == "urlCache" {
-                    detectUrlCache(node: modifier, at: location)
+                    handleUrlCache(node: modifier, at: location)
                 }
                 
                 if property == "requestCachePolicy" {
-                    detectRequestCachePolicy(node: modifier, at: location)
+                    handleRequestCachePolicy(node: modifier, at: location)
                 }
             }
         }
@@ -52,7 +52,7 @@ class CachingPolicyVisitor: SyntaxVisitor, Visitable {
 }
 
 private extension CachingPolicyVisitor {
-    func detectUrlCache(node: MemberAccessExprSyntax?, at location: SourceLocation) {
+    func handleUrlCache(node: MemberAccessExprSyntax?, at location: SourceLocation) {
         if node?.declName.baseName.text == "shared" {
             warnings.append(XcodeDiagnostic(
                 filePath: filePath,
@@ -70,7 +70,7 @@ private extension CachingPolicyVisitor {
         }
     }
     
-    func detectRequestCachePolicy(node: MemberAccessExprSyntax?, at location: SourceLocation) {
+    func handleRequestCachePolicy(node: MemberAccessExprSyntax?, at location: SourceLocation) {
         let policyName = node?.declName.baseName.text
         let recognizedPolicies = [
             "useProtocolCachePolicy",

@@ -1,22 +1,15 @@
 import SwiftSyntax
 
-class CachingVisitorService {
+class CachingVisitorService: VisitableService {
     private let filePath: String
     private let outputPath: String
-    let visitors: [Visitable]
+    var visitors: [Visitable]
 
     init(filePath: String, outputPath: String) {
         self.filePath = filePath
         self.outputPath = outputPath
-        visitors = [
+        self.visitors = [
             CachingPolicyVisitor(filePath: filePath),
         ]
-    }
-
-    func analyzeSyntaxTree(_ tree: SourceFileSyntax) -> [XcodeDiagnostic] {
-        visitors.flatMap { visitor in
-            visitor.walk(tree)
-            return visitor.warnings
-        }
     }
 }

@@ -1,9 +1,9 @@
 import SwiftSyntax
 
-class URLVisitorManager {
+class URLVisitorService: VisitableService {
     private let filePath: String
     private let outputPath: String
-    let visitors: [Visitable]
+    var visitors: [Visitable]
     
     init(filePath: String, outputPath: String) {
         self.filePath = filePath
@@ -16,12 +16,5 @@ class URLVisitorManager {
             PrefetchingAndBackgroundDataVisitor(filePath: filePath),
             TimeoutAndRetryVisitor(filePath: filePath)
         ]
-    }
-    
-    func analyzeSyntaxTree(_ tree: SourceFileSyntax) -> [PropertyImpact] {
-        visitors.flatMap { visitor in
-            visitor.walk(tree)
-            return visitor.properties.values.filter { $0.found && $0.hasNetworkImpact }
-        }
     }
 }
