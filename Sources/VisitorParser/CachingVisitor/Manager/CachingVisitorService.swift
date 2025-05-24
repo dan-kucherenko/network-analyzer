@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-class CachingVisitorManager {
+class CachingVisitorService {
     private let filePath: String
     private let outputPath: String
     let visitors: [Visitable]
@@ -13,10 +13,10 @@ class CachingVisitorManager {
         ]
     }
 
-    func analyzeSyntaxTree(_ tree: SourceFileSyntax) -> [PropertyImpact] {
+    func analyzeSyntaxTree(_ tree: SourceFileSyntax) -> [XcodeDiagnostic] {
         visitors.flatMap { visitor in
             visitor.walk(tree)
-            return visitor.properties.values.filter { $0.found && $0.hasNetworkImpact }
+            return visitor.warnings
         }
     }
 }
