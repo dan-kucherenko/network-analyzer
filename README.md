@@ -1,60 +1,129 @@
 # Network Analyzer
 
-A Swift-based network analysis tool that helps developers analyze and understand their code structure in order to find places that may impact the network usage of the mobile app
+A static analysis tool for detecting network-related anti-patterns in iOS applications. The tool analyzes Swift source code to identify potential issues with network usage, caching, lifecycle management, and push notifications.
 
-## Requirements
+## Features
 
-- macOS 15.0 or later
-- Swift 6.0 or later
+- Static analysis of Swift source code
+- Detection of network-related anti-patterns
+- Support for command-line and build tool pluginusage
+- Detailed recommendations for fixing detected issues
 
 ## Installation
 
-1. Clone the repository:
+### Swift Package Manager
 
-```bash
-git clone https://github.com/dan-kucherenko/network-analyzer.git
-cd network-analyzer
+Add the following dependency to your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/yourusername/network-analyzer.git", from: "1.0.0")
+]
 ```
 
-2. Build the project:
+### Build Tool Plugin
+
+1. Add the plugin to your target in `Package.swift`:
+
+```swift
+targets: [
+    .target(
+        name: "YourTarget",
+        plugins: [
+            .plugin(name: "NetworkAnalyzerPlugin", package: "network-analyzer")
+        ]
+    )
+]
+```
+
+2. The plugin will automatically run during the build process and show warnings in Xcode's issue navigator.
+
+### Command Line
+
+You can run the analyzer directly from the command line:
 
 ```bash
-swift build
+swift run network-analyzer -i /path/to/your/file.swift
 ```
+
+Options:
+
+- `-i, --input-file`: Path to the input file to analyze (required)
+- `-o, --output-path`: Path to the output file (optional)
 
 ## Usage
 
-After building the project, you can run the analyzer using:
+### Build Tool Plugin
+
+The plugin will automatically analyze your source files during the build process. Warnings will appear in:
+
+- Xcode's issue navigator
+- Build log
+- Inline in your source code
+
+### Command Line
 
 ```bash
-.build/debug/network-analyzer -i <input_file_path> -o <output_file_path>
+# Analyze a single file
+swift run network-analyzer -i /path/to/your/file.swift
+
+# Analyze a file and save output
+swift run network-analyzer -i /path/to/your/file.swift -o /path/to/output.txt
 ```
 
-Or for release builds:
+## Anti-Patterns Detected
 
-```bash
-.build/release/network-analyzer -i <input_file_path> -o <output_file_path>
-```
+### URL Configuration
 
-### Command Line Options
+- Extremely short timeout intervals
+- Cellular access without checks
+- Video network service for non-video content
+- Disabled connectivity waiting
+- Excessive connections per host
+- Expensive network access enabled
+- Launch events enabled
+- Aggregate multipath service type
 
-- `-i, --input-file <path>` : Path to the input Swift file you want to analyze
-- `-o, --output-path <path>` : (Optional) Path where the analysis results will be saved. If not provided, results will be printed to the console
+### Caching
 
-### Analysis Output
+- Zero-capacity URLCache
+- ReloadIgnoringCacheData policy
+- ReturnCacheDataDontLoad request policy
 
-The tool performs multiple types of analysis on your code:
+### HTTP Configuration
 
-1. URL Analysis - Detects URL-related patterns and potential issues
-2. Polling Analysis - Identifies polling mechanisms and their implementation
-3. Lifecycle Analysis - Analyzes network-related lifecycle management
-4. Caching Analysis - Examines caching strategies and implementations
-5. Notification Analysis - Reviews notification patterns related to networking
+- Hardcoded cookies in headers
+- Cookie acceptance policy set to always
+- HTTP pipelining enabled
 
-## Dependencies
+### Polling
 
-The project uses Swift Package Manager for dependency management. The main dependencies are:
+- Frequent timer-based polling
+- Recursive dispatch polling with asyncAfter
+- Infinite loop with Thread.sleep
 
-- [SwiftSyntax](https://github.com/swiftlang/swift-syntax) (v600.0.1 or later) - For Swift code parsing and analysis
-- [Swift DocC SymbolKit](https://github.com/apple/swift-docc-symbolkit) - For symbol processing
-- [Swift Argument Parser](https://github.com/apple/swift-argument-parser) (v1.3.0 or later) - For command-line argument parsing
+### Lifecycle
+
+- Heavy network operations in applicationDidEnterBackground
+- No pause/stop operations in applicationWillResignActive
+- Network operations in background state
+
+### Notifications
+
+- content-available flag set to 1
+- Heavy processing in didReceiveRemoteNotification without calling completion handler
+- No proper background fetch handling
+
+## Example Project
+
+The example project includes:
+
+- AppDelegate with lifecycle anti-patterns
+- NetworkManager with URL configuration anti-patterns
+- Polling implementation with various anti-patterns
+- Push notification handling with anti-patterns
+
+## Acknowledgments
+
+- [SwiftSyntax](https://github.com/apple/swift-syntax) for providing the Swift source code parsing capabilities
+- [ArgumentParser](https://github.com/apple/swift-argument-parser) for command-line argument parsing
