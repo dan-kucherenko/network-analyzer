@@ -114,15 +114,6 @@ swift run network-analyzer -i /path/to/your/file.swift -o /path/to/output.txt
 - Heavy processing in didReceiveRemoteNotification without calling completion handler
 - No proper background fetch handling
 
-## Example Project
-
-The example project includes:
-
-- AppDelegate with lifecycle anti-patterns
-- NetworkManager with URL configuration anti-patterns
-- Polling implementation with various anti-patterns
-- Push notification handling with anti-patterns
-
 ## Acknowledgments
 
 - [SwiftSyntax](https://github.com/apple/swift-syntax) for providing the Swift source code parsing capabilities
